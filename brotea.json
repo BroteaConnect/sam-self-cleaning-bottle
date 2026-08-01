@@ -14,5 +14,9 @@
       "es"
     ],
     "runtime": "1.0.0"
+  },
+  "theme": {
+    "name": "brotea",
+    "version": "2.0.0"
   }
 }
