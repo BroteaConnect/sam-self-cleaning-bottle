@@ -1,45 +1,66 @@
 ---
+import LanguageSwitcher from '../../components/LanguageSwitcher.astro';
+import { alternates, dirOf, localePath, localePaths, stripLocale, t } from '../../lib/i18n';
+
+// One file, every language: / (default locale) and /<code>/ for the rest.
+export const getStaticPaths = localePaths;
+const { locale } = Astro.props;
+const i18nPath = stripLocale(Astro.url.pathname);
+const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : href);
 const PROJECT_NAME = 'Sam Self Cleaning Bottle';
 const PROJECT_SLUG = 'sam-self-cleaning-bottle';
 const PROJECT_DESCRIPTION = 'sam self cleaning bottle';
 // Endpoint that receives requirement submissions (Brotea bot/orchestrator).
-import '../styles/theme.css';
+import '../../styles/theme.css';
 // `||`, never `??`: the Dockerfile ARG default is an empty string, which is
 // not nullish, so `??` would ship a dead form again.
 const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https://api.brotea.dev/requirements';
 ---
 
-<html lang="en">
+<html lang={locale} dir={dirOf(locale)}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{PROJECT_NAME}</title>
-    <meta name="description" content={PROJECT_DESCRIPTION} />
+    <meta name="description" content={t(locale, 'hero.tagline')} />
+    {alternates(i18nPath).map((a) => (
+      <link rel="alternate" hreflang={a.hreflang} href={abs(a.href)} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={abs(localePath(locale, i18nPath))} />
   </head>
   <body>
+    <header class="lang-bar"><LanguageSwitcher locale={locale} /></header>
     <main>
       <section class="hero">
         <h1>{PROJECT_NAME}</h1>
-        <p>{PROJECT_DESCRIPTION}</p>
+        <p>{t(locale, 'hero.tagline')}</p>
       </section>
 
       <section class="form-card">
-        <h2>Tell us what you need</h2>
-        <p>Your input shapes what gets built first.</p>
-        <form id="requirements-form" data-endpoint={ENDPOINT} data-project={PROJECT_SLUG}>
+        <h2>{t(locale, 'form.title')}</h2>
+        <p>{t(locale, 'form.subtitle')}</p>
+        <form
+          id="requirements-form"
+          data-endpoint={ENDPOINT}
+          data-project={PROJECT_SLUG}
+          data-msg-disabled={t(locale, 'form.disabled')}
+          data-msg-sending={t(locale, 'form.sending')}
+          data-msg-thanks={t(locale, 'form.thanks')}
+          data-msg-error={t(locale, 'form.error')}
+        >
           <label>
-            Name
+            {t(locale, 'form.name')}
             <input type="text" name="name" required maxlength="120" />
           </label>
           <label>
-            Email
+            {t(locale, 'form.email')}
             <input type="email" name="email" required maxlength="200" />
           </label>
           <label>
-            What should this project do for you?
+            {t(locale, 'form.message')}
             <textarea name="content" required rows="5" maxlength="4000"></textarea>
           </label>
-          <button type="submit">Send</button>
+          <button type="submit">{t(locale, 'form.submit')}</button>
           <p id="form-status" role="status"></p>
         </form>
       </section>
@@ -52,11 +73,11 @@ const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https:
         e.preventDefault();
         const endpoint = form.dataset.endpoint;
         if (!endpoint) {
-          status.textContent = 'Submissions are not enabled yet.';
+          status.textContent = form.dataset.msgDisabled;
           return;
         }
         const data = Object.fromEntries(new FormData(form));
-        status.textContent = 'Sending…';
+        status.textContent = form.dataset.msgSending;
         try {
           const res = await fetch(endpoint, {
             method: 'POST',
@@ -70,14 +91,16 @@ const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https:
           });
           if (!res.ok) throw new Error(String(res.status));
           form.reset();
-          status.textContent = 'Thank you! We received your input.';
+          status.textContent = form.dataset.msgThanks;
         } catch {
-          status.textContent = 'Something went wrong — please try again later.';
+          status.textContent = form.dataset.msgError;
         }
       });
     </script>
 
     <style>
+      .lang-bar { max-width: var(--container); margin: 0 auto;
+                  padding: var(--space-4) var(--space-4) 0; display: flex; justify-content: flex-end; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: var(--font-sans); color: var(--text); background: var(--bg); }
       main { max-width: var(--container); margin: 0 auto; padding: 4rem var(--space-4); }
