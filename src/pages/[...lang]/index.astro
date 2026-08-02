@@ -1,4 +1,5 @@
 ---
+import FeatureCard from '../../components/FeatureCard.astro';
 import LanguageSwitcher from '../../components/LanguageSwitcher.astro';
 import { alternates, dirOf, localePath, localePaths, stripLocale, t } from '../../lib/i18n';
 
@@ -9,7 +10,6 @@ const i18nPath = stripLocale(Astro.url.pathname);
 const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : href);
 const PROJECT_NAME = 'Sam Self Cleaning Bottle';
 const PROJECT_SLUG = 'sam-self-cleaning-bottle';
-const PROJECT_DESCRIPTION = 'sam self cleaning bottle';
 // Endpoint that receives requirement submissions (Brotea bot/orchestrator).
 import '../../styles/theme.css';
 // `||`, never `??`: the Dockerfile ARG default is an empty string, which is
@@ -22,7 +22,7 @@ const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{PROJECT_NAME}</title>
-    <meta name="description" content={t(locale, 'hero.tagline')} />
+    <meta name="description" content={t(locale, 'meta.description')} />
     {alternates(i18nPath).map((a) => (
       <link rel="alternate" hreflang={a.hreflang} href={abs(a.href)} />
     ))}
@@ -32,8 +32,44 @@ const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https:
     <header class="lang-bar"><LanguageSwitcher locale={locale} /></header>
     <main>
       <section class="hero">
-        <h1>{PROJECT_NAME}</h1>
-        <p>{t(locale, 'hero.tagline')}</p>
+        <h1>{t(locale, 'hero.title')}</h1>
+        <p class="tagline">{t(locale, 'hero.tagline')}</p>
+        <p class="sub">{t(locale, 'hero.sub')}</p>
+        <a class="button" href="#requirements-form">{t(locale, 'hero.cta')}</a>
+      </section>
+
+      <section class="features" aria-labelledby="features-title">
+        <h2 id="features-title">{t(locale, 'features.title')}</h2>
+        <div class="feature-grid">
+          {['1', '2', '3', '4'].map((n) => (
+            <FeatureCard title={t(locale, `features.${n}.title`)} body={t(locale, `features.${n}.body`)} />
+          ))}
+        </div>
+      </section>
+
+      <section class="how" aria-labelledby="how-title">
+        <h2 id="how-title">{t(locale, 'how.title')}</h2>
+        <ol>
+          {['step1', 'step2', 'step3'].map((step) => (
+            <li>{t(locale, `how.${step}`)}</li>
+          ))}
+        </ol>
+      </section>
+
+      <section class="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">{t(locale, 'faq.title')}</h2>
+        {['1', '2', '3', '4'].map((n) => (
+          <details>
+            <summary>{t(locale, `faq.${n}.q`)}</summary>
+            <p>{t(locale, `faq.${n}.a`)}</p>
+          </details>
+        ))}
+      </section>
+
+      <section class="cta" aria-labelledby="cta-title">
+        <h2 id="cta-title">{t(locale, 'cta.title')}</h2>
+        <p>{t(locale, 'cta.sub')}</p>
+        <a class="button" href="#requirements-form">{t(locale, 'hero.cta')}</a>
       </section>
 
       <section class="form-card">
@@ -107,7 +143,21 @@ const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https:
       body { margin: 0; font-family: var(--font-sans); color: var(--text); background: var(--bg); }
       main { max-width: var(--container); margin: 0 auto; padding: 4rem var(--space-4); }
       .hero h1 { font-family: var(--font-display); font-size: 2.5rem; margin: 0 0 .5rem; }
-      .hero p { font-size: 1.15rem; color: var(--muted); }
+      .hero .tagline { font-size: 1.15rem; color: var(--accent); font-weight: 600; margin: 0 0 var(--space-3); }
+      .hero .sub { font-size: 1.05rem; color: var(--muted); margin: 0 0 var(--space-5); }
+      .button { display: inline-block; padding: .7rem 1.6rem; border-radius: var(--radius); background: var(--primary); color: var(--primary-contrast); font-weight: 600; text-decoration: none; }
+      .button:hover { filter: brightness(0.92); }
+      section h2 { font-family: var(--font-display); font-size: 1.5rem; margin: 0 0 var(--space-4); }
+      .features, .how, .faq, .cta { margin-top: var(--space-6); }
+      .feature-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .how ol { margin: 0; padding-left: var(--space-5); }
+      .how li { margin-bottom: var(--space-3); }
+      .how li::marker { color: var(--primary); font-weight: 700; }
+      .faq details { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); margin-bottom: var(--space-3); }
+      .faq summary { font-weight: 600; cursor: pointer; }
+      .faq details p { margin: var(--space-3) 0 0; color: var(--muted); }
+      .cta { text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: var(--space-6) var(--space-5); }
+      .cta p { color: var(--muted); margin: 0 0 var(--space-5); }
       .form-card { margin-top: var(--space-6); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: var(--space-5); }
       label { display: block; margin-bottom: var(--space-4); font-weight: 600; }
       input, textarea { display: block; width: 100%; margin-top: .35rem; padding: .6rem; border: 1px solid var(--border); border-radius: var(--radius); font: inherit; background: var(--bg); color: var(--text); }

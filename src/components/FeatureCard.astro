@@ -1,0 +1,33 @@
+---
+// Benefit card for the features section. All copy arrives via props,
+// already translated by t() in the page — no literals here.
+interface Props {
+  title: string;
+  body: string;
+}
+const { title, body } = Astro.props;
+---
+
+<article class="feature-card">
+  <h3>{title}</h3>
+  <p>{body}</p>
+</article>
+
+<style>
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: var(--space-5);
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    margin: 0 0 var(--space-2);
+  }
+  p {
+    margin: 0;
+    color: var(--muted);
+  }
+</style>
