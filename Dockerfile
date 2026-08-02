@@ -11,6 +11,8 @@ COPY . .
 # wires one ARG/ENV pair per feature right below this anchor; the deploy
 # skill supplies the values as Coolify build args.
 # brotea:build-args
+ARG PUBLIC_BUILD_COMMIT
+ENV PUBLIC_BUILD_COMMIT=$PUBLIC_BUILD_COMMIT
 ARG PUBLIC_REQUIREMENTS_ENDPOINT=""
 ENV PUBLIC_REQUIREMENTS_ENDPOINT=$PUBLIC_REQUIREMENTS_ENDPOINT
 RUN npm run build
