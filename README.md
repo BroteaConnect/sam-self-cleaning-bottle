@@ -1,14 +1,13 @@
 # Sam Self Cleaning Bottle
 
-Landing page with a requirements form, generated from Brotea's
-`landing-astro` template.
+Product landing page for the Sam self-cleaning water bottle, with a
+requirements form. Generated from Brotea's `landing-astro` template;
+English content with a full Spanish mirror (`/` and `/es/`). Live at
+<https://sam-self-cleaning-bottle.brotea.dev/>.
 
-## Template placeholders (replaced by the new-project skill)
-- `Sam Self Cleaning Bottle` — human-readable project name
-- `sam-self-cleaning-bottle` — kebab-case slug (also the repo name)
-- `sam self cleaning bottle` — one-sentence idea/description
-- `sam-self-cleaning-bottle` — same slug, used in machine-validated name
-  fields (package.json) where leading underscores are illegal
+See [docs/](docs/README.md) for page structure and the i18n contract.
+All user-facing copy lives in `src/locales/<code>.json` — never in
+components.
 
 ## Configuration
 - `PUBLIC_REQUIREMENTS_ENDPOINT` — URL that receives the form's JSON POST
