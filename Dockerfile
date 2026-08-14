@@ -11,13 +11,16 @@ COPY . .
 # wires one ARG/ENV pair per feature right below this anchor; the deploy
 # skill supplies the values as Coolify build args.
 # brotea:build-args
+ARG PUBLIC_REQUIREMENTS_ENDPOINT
+ENV PUBLIC_REQUIREMENTS_ENDPOINT=$PUBLIC_REQUIREMENTS_ENDPOINT
 ARG PUBLIC_BUILD_COMMIT
 ENV PUBLIC_BUILD_COMMIT=$PUBLIC_BUILD_COMMIT
-ARG PUBLIC_REQUIREMENTS_ENDPOINT=""
-ENV PUBLIC_REQUIREMENTS_ENDPOINT=$PUBLIC_REQUIREMENTS_ENDPOINT
 RUN npm run build
-# The form must never ship dead again: a landing build without a real
-# endpoint in the HTML is a broken artifact, not a warning.
+# Bricks that must PROVE something about the built artifact wire their check
+# below this anchor. The form incident of 2026-07-29 is why: a landing shipped
+# with no endpoint in its HTML, the build was green, and the form was dead for
+# days. A warning would have been ignored; a failing build cannot be.
+# brotea:post-build
 RUN grep -q 'data-endpoint="https://[^"]*"' dist/index.html
 
 FROM nginx:alpine

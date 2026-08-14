@@ -1,8 +1,10 @@
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
 
-// Static output: deployable to Cloudflare Pages or any static host.
+// React integration lets Astro render feature components as islands
+// (client:load), so a feature's React UI is shared with the `react` stack.
 export default defineConfig({
   // absolute hreflang alternates need the canonical origin
   site: 'https://sam-self-cleaning-bottle.brotea.dev',
-  output: 'static',
+  integrations: [react()],
 });

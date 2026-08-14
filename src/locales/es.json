@@ -33,10 +33,13 @@
   "hero.sub": "Agua fresca, siempre lista. La tecnología autolimpiante de Sam mantiene tu botella higiénica entre recargas, para que lo único en lo que pienses sea hidratarte.",
   "hero.tagline": "La botella que se mantiene limpia sola.",
   "hero.title": "Sam Self Cleaning Bottle",
+  "home.generated": "Generado con el stack {stack} de Brotea. Las features que añade la fábrica de plantillas aparecen en el menú de arriba, renderizadas como islas de React.",
+  "home.tagline": "__PROJECT_DESCRIPTION__",
   "how.step1": "Llena Sam de agua, como cualquier otra botella.",
   "how.step2": "El ciclo de autolimpieza se activa solo y mantiene higiénico el interior de la botella.",
   "how.step3": "Bebe, rellena y repite: Sam se encarga de la limpieza entre recarga y recarga.",
   "how.title": "Cómo funciona",
   "meta.description": "Sam Self Cleaning Bottle: una botella reutilizable con tecnología autolimpiante, aislamiento y materiales duraderos. Agua fresca sin frotar.",
+  "nav.home": "Inicio",
   "nav.language": "Idioma"
 }
