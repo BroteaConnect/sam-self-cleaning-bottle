@@ -33,10 +33,13 @@
   "hero.sub": "Fresh water, always ready. Sam's self-cleaning technology keeps your bottle hygienic between refills, so the only thing you have to think about is staying hydrated.",
   "hero.tagline": "The bottle that keeps itself clean.",
   "hero.title": "Sam Self Cleaning Bottle",
+  "home.generated": "Generated from Brotea's {stack} stack. Features added with the template factory appear in the nav above, rendered as React islands.",
+  "home.tagline": "__PROJECT_DESCRIPTION__",
   "how.step1": "Fill Sam with water, just like any other bottle.",
   "how.step2": "The self-cleaning cycle runs on its own and keeps the inside of the bottle hygienic.",
   "how.step3": "Drink, refill and repeat — Sam takes care of the cleaning in between.",
   "how.title": "How it works",
   "meta.description": "Sam Self Cleaning Bottle — a reusable water bottle with self-cleaning technology, insulation and durable materials. Fresh water without the scrubbing.",
+  "nav.home": "Home",
   "nav.language": "Language"
 }

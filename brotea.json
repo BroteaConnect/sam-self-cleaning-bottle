@@ -1,8 +1,15 @@
 {
   "schema": 2,
   "composer": "0.5.0",
-  "stack": "landing-astro",
-  "features": {},
+  "stack": "astro",
+  "features": {
+    "landing": {
+      "version": "1.1.0",
+      "files": [
+        "src/pages/[...lang]/index.astro"
+      ]
+    }
+  },
   "i18n": {
     "defaultLocale": "en",
     "locales": [
