@@ -5,7 +5,7 @@ import Nav from '../components/Nav.astro';
 import { DEFAULT_LOCALE, alternates, dirOf, localePath, stripLocale } from '../lib/i18n';
 
 interface Props { title?: string; locale?: string }
-const { title = '__PROJECT_NAME__', locale = DEFAULT_LOCALE } = Astro.props;
+const { title = 'Sam Self Cleaning Bottle', locale = DEFAULT_LOCALE } = Astro.props;
 
 // The same page in every shipped language. hreflang wants absolute URLs: set
 // `site` in astro.config.mjs and these become absolute automatically.
