@@ -27,10 +27,15 @@
     "version": "2.0.0"
   },
   "quality": {
-    "version": "1.4.0"
+    "version": "1.4.1"
   },
   "runtime": {
     "port": 80,
     "health": "/"
+  },
+  "project": {
+    "slug": "sam-self-cleaning-bottle",
+    "name": "Sam Self Cleaning Bottle",
+    "description": "Sam Self Cleaning Bottle"
   }
 }
