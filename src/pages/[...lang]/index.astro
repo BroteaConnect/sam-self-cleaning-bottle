@@ -1,7 +1,9 @@
 ---
 const PROJECT_NAME = 'Sam Self Cleaning Bottle';
 const PROJECT_SLUG = 'sam-self-cleaning-bottle';
+import type { ImageMetadata } from 'astro';
 import '../../styles/theme.css';
+import '../../styles/base.css';
 import LanguageSwitcher from '../../components/LanguageSwitcher.astro';
 import { alternates, dirOf, has, localeOf, localePath, localePaths, series, stripLocale, t, unknownLocale } from '../../lib/i18n';
 
@@ -15,6 +17,7 @@ const locale = localeOf(Astro);
 // `||`, never `??`: the Dockerfile ARG default is an empty string, which is
 // not nullish, so `??` would ship a dead form again.
 const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https://api.brotea.dev/requirements';
+
 // The page is built out of the copy that EXISTS. A section with no dictionary
 // entries is not an empty section with a heading and nothing under it — it is
 // not there at all. That is what makes one brick enough for a one-screen
@@ -23,6 +26,20 @@ const ENDPOINT = import.meta.env.PUBLIC_REQUIREMENTS_ENDPOINT?.trim() || 'https:
 const features = series('features.{n}.title');
 const steps = series('how.step{n}');
 const faqs = series('faq.{n}.q');
+
+// The same rule for the picture. Drop `src/assets/hero.webp` (or avif, png,
+// jpg) into the app and the hero splits, headline beside image; without one the
+// headline carries the page alone, editorial-style. What it never does is fill
+// the gap with a stock photo or a fake product screenshot built out of boxes —
+// a placeholder is the one visual a landing is worse for having. A plain `img`
+// with the bundler's width and height, rather than `astro:assets`, so the
+// build owes nothing to an image service and the layout never shifts.
+const heroImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/hero.{webp,avif,png,jpg,jpeg}',
+  { eager: true },
+);
+const hero = Object.values(heroImages)[0]?.default ?? null;
+
 const path = stripLocale(Astro.url.pathname);
 const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : href);
 ---
@@ -39,21 +56,40 @@ const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : hre
     <link rel="alternate" hreflang="x-default" href={abs(localePath('es', path))} />
   </head>
   <body>
-    <header><LanguageSwitcher locale={locale} /></header>
+    <header class="shell">
+      <a class="brand" href={localePath(locale, '/')}>{PROJECT_NAME}</a>
+      <LanguageSwitcher locale={locale} />
+    </header>
+
     <main>
-      <section class="hero">
-        <h1>{has('hero.title') ? t(locale, 'hero.title') : PROJECT_NAME}</h1>
-        <p class="tagline">{t(locale, 'hero.tagline')}</p>
-        {has('hero.sub') && <p class="sub">{t(locale, 'hero.sub')}</p>}
-        {has('hero.cta') && <a class="button" href="#requirements-form">{t(locale, 'hero.cta')}</a>}
+      <section class="hero shell" data-split={hero ? 'true' : undefined}>
+        <div class="hero-copy">
+          <h1>{has('hero.title') ? t(locale, 'hero.title') : PROJECT_NAME}</h1>
+          <p class="tagline">{t(locale, 'hero.tagline')}</p>
+          {has('hero.sub') && <p class="sub">{t(locale, 'hero.sub')}</p>}
+          {has('hero.cta') && <a class="button" href="#ask">{t(locale, 'hero.cta')}</a>}
+        </div>
+        {hero && (
+          <figure class="hero-figure">
+            <img
+              src={hero.src}
+              width={hero.width}
+              height={hero.height}
+              alt={t(locale, 'hero.image_alt')}
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+            />
+          </figure>
+        )}
       </section>
 
       {features.length > 0 && (
-        <section class="features" aria-labelledby="features-title">
-          <h2 id="features-title">{t(locale, 'features.title')}</h2>
-          <div class="feature-grid">
+        <section class="features shell split" aria-labelledby="features-title">
+          <h2 id="features-title" class="reveal">{t(locale, 'features.title')}</h2>
+          <div class="stack">
             {features.map((n) => (
-              <article class="feature-card">
+              <article class="reveal">
                 <h3>{t(locale, `features.${n}.title`)}</h3>
                 <p>{t(locale, `features.${n}.body`)}</p>
               </article>
@@ -63,35 +99,38 @@ const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : hre
       )}
 
       {steps.length > 0 && (
-        <section class="how" aria-labelledby="how-title">
-          <h2 id="how-title">{t(locale, 'how.title')}</h2>
-          <ol>{steps.map((n) => <li>{t(locale, `how.step${n}`)}</li>)}</ol>
+        <section class="how shell" aria-labelledby="how-title">
+          <h2 id="how-title" class="reveal">{t(locale, 'how.title')}</h2>
+          <ol class="steps">
+            {steps.map((n) => <li class="reveal">{t(locale, `how.step${n}`)}</li>)}
+          </ol>
         </section>
       )}
 
       {faqs.length > 0 && (
-        <section class="faq" aria-labelledby="faq-title">
-          <h2 id="faq-title">{t(locale, 'faq.title')}</h2>
-          {faqs.map((n) => (
-            <details>
-              <summary>{t(locale, `faq.${n}.q`)}</summary>
-              <p>{t(locale, `faq.${n}.a`)}</p>
-            </details>
-          ))}
+        <section class="faq shell split" aria-labelledby="faq-title">
+          <h2 id="faq-title" class="reveal">{t(locale, 'faq.title')}</h2>
+          <div class="stack faq-list reveal">
+            {faqs.map((n) => (
+              <details>
+                <summary>{t(locale, `faq.${n}.q`)}</summary>
+                <p>{t(locale, `faq.${n}.a`)}</p>
+              </details>
+            ))}
+          </div>
         </section>
       )}
 
-      {has('cta.title') && (
-        <section class="cta" aria-labelledby="cta-title">
-          <h2 id="cta-title">{t(locale, 'cta.title')}</h2>
-          {has('cta.sub') && <p>{t(locale, 'cta.sub')}</p>}
-          {has('hero.cta') && <a class="button" href="#requirements-form">{t(locale, 'hero.cta')}</a>}
-        </section>
-      )}
-
-      <section class="form-card">
-        <h2>{t(locale, 'form.title')}</h2>
-        <p>{t(locale, 'form.subtitle')}</p>
+      <!-- The ask: the one call to action on the page, and the form it leads
+           to, side by side. The band inverts when there is CTA copy to carry
+           it — `.invert` is the theme's own device for a region on the
+           opposite ground, and the whole vocabulary flips with it, so the
+           inputs inside are styled with the same tokens as everywhere else. -->
+      <section id="ask" class:list={['ask', 'shell', 'reveal', { invert: has('cta.title') }]} aria-labelledby="ask-title">
+        <div class="ask-copy">
+          <h2 id="ask-title">{has('cta.title') ? t(locale, 'cta.title') : t(locale, 'form.title')}</h2>
+          <p>{has('cta.title') && has('cta.sub') ? t(locale, 'cta.sub') : t(locale, 'form.subtitle')}</p>
+        </div>
         <!-- The client script is not bundled per locale, so its messages travel
              as data-* attributes rendered server-side in the right language. -->
         <form
@@ -104,37 +143,57 @@ const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : hre
           data-msg-error={t(locale, 'form.error')}
         >
           <label>
-            {t(locale, 'form.name')}
-            <input type="text" name="name" required maxlength="120" />
+            <span>{t(locale, 'form.name')}</span>
+            <input type="text" name="name" required maxlength="120" autocomplete="name" />
           </label>
           <label>
-            {t(locale, 'form.email')}
-            <input type="email" name="email" required maxlength="200" />
+            <span>{t(locale, 'form.email')}</span>
+            <input type="email" name="email" required maxlength="200" autocomplete="email" />
           </label>
           <label>
-            {t(locale, 'form.message')}
+            <span>{t(locale, 'form.message')}</span>
             <textarea name="content" required rows="5" maxlength="4000"></textarea>
           </label>
-          <button type="submit">{t(locale, 'form.submit')}</button>
-          <p id="form-status" role="status"></p>
+          <button class="button" type="submit">{t(locale, 'form.submit')}</button>
+          <p id="form-status" role="status" aria-live="polite"></p>
         </form>
       </section>
     </main>
 
     <script>
-      // explicit typing: getElementById returns HTMLElement, and without this
-      // `form.reset()` and `new FormData(form)` do not compile (astro check)
+      // Sections below the fold rise into place as they enter the viewport.
+      // The `js` class is what arms the effect: without a script the page is
+      // simply visible, never a blank one waiting for an observer that will
+      // not come. Reduced motion collapses the transition in css and skips the
+      // observer here, so nothing is ever hidden behind a preference.
+      const root = document.documentElement;
+      const reveal = Array.from(document.querySelectorAll<HTMLElement>('.reveal'));
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!still && 'IntersectionObserver' in window) {
+        root.classList.add('js');
+        const io = new IntersectionObserver((entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          }
+        }, { rootMargin: '0px 0px -10% 0px' });
+        reveal.forEach((el) => io.observe(el));
+      }
+
+      // explicit typing: getElementById returns HTMLElement | null, and
+      // `astro check` is right to refuse `.reset()` on a maybe-null.
       const form = document.getElementById('requirements-form') as HTMLFormElement;
-      const status = document.getElementById('form-status');
+      const status = document.getElementById('form-status') as HTMLElement;
+      const say = (key: string) => { status.textContent = form.dataset[key] ?? ''; };
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const endpoint = form.dataset.endpoint;
-        if (!endpoint) {
-          status.textContent = form.dataset.msgDisabled;
-          return;
-        }
+        if (!endpoint) return say('msgDisabled');
         const data = Object.fromEntries(new FormData(form));
-        status.textContent = form.dataset.msgSending;
+        const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+        if (submit) submit.disabled = true;
+        say('msgSending');
         try {
           const res = await fetch(endpoint, {
             method: 'POST',
@@ -148,43 +207,234 @@ const abs = (href: string) => (Astro.site ? new URL(href, Astro.site).href : hre
           });
           if (!res.ok) throw new Error(String(res.status));
           form.reset();
-          status.textContent = form.dataset.msgThanks;
+          say('msgThanks');
         } catch {
-          status.textContent = form.dataset.msgError;
+          say('msgError');
+        } finally {
+          if (submit) submit.disabled = false;
         }
       });
     </script>
 
     <style>
-      * { box-sizing: border-box; }
-      body { margin: 0; font-family: var(--font-sans); color: var(--text); background: var(--bg); }
-      header { max-width: var(--container); margin: 0 auto; padding: var(--space-4) var(--space-4) 0; display: flex; justify-content: flex-end; }
-      main { max-width: var(--container); margin: 0 auto; padding: 2rem var(--space-4) 4rem; }
-      .hero h1 { font-family: var(--font-display); font-size: 2.5rem; margin: 0 0 .5rem; }
-      .hero p { font-size: 1.15rem; color: var(--muted); }
-      .form-card { margin-top: var(--space-6); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: var(--space-5); }
-      label { display: block; margin-bottom: var(--space-4); font-weight: 600; }
-      input, textarea { display: block; width: 100%; margin-top: .35rem; padding: .6rem; border: 1px solid var(--border); border-radius: var(--radius); font: inherit; background: var(--bg); color: var(--text); }
-      button { padding: .7rem 1.6rem; border: 0; border-radius: var(--radius); background: var(--primary); color: var(--primary-contrast); font: inherit; font-weight: 600; cursor: pointer; }
-      button:hover { filter: brightness(0.92); }
-      #form-status { min-height: 1.2em; color: var(--muted); }
+      /* Tokens only — a colour, a curve or a duration written here is one the
+         theme cannot change. The shell is wider than the reading width: a
+         landing is a composition, prose inside it still wraps at --measure. */
+      .shell {
+        width: min(100% - 2 * var(--space-5), calc(var(--container) * 1.65));
+        margin-inline: auto;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding-block: var(--space-4);
+      }
+      .brand {
+        font-family: var(--font-brand);
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: var(--text);
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+      main > section + section { margin-top: calc(var(--space-6) * 2.5); }
+      main { padding-bottom: calc(var(--space-6) * 2.5); }
+      h2 {
+        font-size: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
 
-      /* Sections that only exist when there is copy for them. Tokens only —
-         a colour written here is a colour the theme cannot change. */
-      .hero .tagline { font-size: 1.15rem; color: var(--muted); }
-      .hero .sub { color: var(--muted); max-width: 60ch; }
-      .button { display: inline-block; margin-top: var(--space-4); padding: .7rem 1.6rem; border-radius: var(--radius); background: var(--primary); color: var(--primary-contrast); font-weight: 600; text-decoration: none; }
-      .button:hover { filter: brightness(0.92); }
-      section + section { margin-top: var(--space-6); }
-      h2 { font-family: var(--font-display); font-size: 1.75rem; }
-      .feature-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
-      .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); }
-      .feature-card h3 { margin-top: 0; font-family: var(--font-display); }
-      .feature-card p, .how li, .faq p { color: var(--muted); }
-      .how ol { padding-left: 1.25rem; display: grid; gap: var(--space-4); }
-      .faq details { border-bottom: 1px solid var(--border); padding: var(--space-4) 0; }
-      .faq summary { font-weight: 600; cursor: pointer; }
-      .cta { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); text-align: center; }
+      /* -- hero ---------------------------------------------------------- */
+      .hero {
+        padding-block: calc(var(--space-6) * 1.5) var(--space-6);
+        display: grid;
+        gap: var(--space-6);
+        align-items: center;
+      }
+      .hero[data-split] { grid-template-columns: 6fr 5fr; }
+      .hero-copy { max-width: 36rem; }
+      /* The headline's width is set on the headline, in ITS `ch`: on the
+         container the same unit is measured in body type and a six-rem
+         headline ends up one word per line. Two lines is the target. */
+      .hero h1 {
+        font-size: clamp(2.5rem, 1.5rem + 3.5vw, 4.5rem);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+        margin: 0;
+        max-width: 14ch;
+      }
+      .hero:not([data-split]) .hero-copy { max-width: none; }
+      .hero:not([data-split]) h1 {
+        font-size: clamp(2.75rem, 1.5rem + 5vw, 6rem);
+        max-width: 12ch;
+      }
+      .hero:not([data-split]) .tagline, .hero:not([data-split]) .sub { max-width: 36rem; }
+      .hero .tagline {
+        font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+        line-height: 1.4;
+        color: var(--muted);
+        margin: var(--space-4) 0 0;
+        max-width: var(--measure);
+      }
+      .hero .sub { color: var(--muted); margin: var(--space-3) 0 0; max-width: var(--measure); }
+      .hero .button { margin-top: var(--space-5); }
+      .hero-figure { margin: 0; }
+      .hero-figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: var(--radius-lg);
+      }
+      /* A staged entrance, once, on the one screen every visitor sees first.
+         Keyframes are right here — nothing interrupts a page load — and the
+         siblings arrive a beat apart so the eye reads them in order. */
+      .hero-copy > *, .hero-figure {
+        animation: rise var(--duration-enter) var(--ease-out) both;
+        animation-delay: calc(var(--i, 0) * var(--stagger));
+      }
+      .hero-copy > :nth-child(2) { --i: 1; }
+      .hero-copy > :nth-child(3) { --i: 2; }
+      .hero-copy > :nth-child(4) { --i: 3; }
+      .hero-figure { --i: 2; }
+      @keyframes rise {
+        from { opacity: 0; translate: 0 12px; }
+        to { opacity: 1; translate: 0 0; }
+      }
+
+      /* -- a heading beside its content ---------------------------------- */
+      .split {
+        display: grid;
+        grid-template-columns: 2fr 3fr;
+        gap: var(--space-6);
+        align-items: start;
+      }
+      .split > h2 {
+        position: sticky;
+        top: var(--space-5);
+      }
+      .stack { display: grid; gap: var(--space-6); }
+      .features h3 {
+        font-size: 1.375rem;
+        line-height: 1.2;
+        margin: 0 0 var(--space-2);
+      }
+      .features p { color: var(--muted); margin: 0; max-width: var(--measure); }
+
+      /* -- steps ---------------------------------------------------------- */
+      .how h2 { margin-bottom: var(--space-6); }
+      .steps {
+        list-style: none;
+        counter-reset: step;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+        gap: var(--space-6) var(--space-5);
+      }
+      .steps li { color: var(--muted); max-width: var(--measure); }
+      .steps li::before {
+        counter-increment: step;
+        content: counter(step);
+        display: block;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 2.5rem;
+        line-height: 1;
+        color: var(--primary);
+        margin-bottom: var(--space-3);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* -- faq ------------------------------------------------------------ */
+      .faq-list { gap: 0; }
+      .faq details { border-top: 1px solid var(--border); }
+      .faq details:last-child { border-bottom: 1px solid var(--border); }
+      .faq summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: var(--space-4) 0;
+        min-height: 2.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        list-style: none;
+      }
+      .faq summary::-webkit-details-marker { display: none; }
+      /* The one marker on the page: a plus that turns into a cross. A
+         transition, not keyframes, so a second click mid-turn reverses it. */
+      .faq summary::after {
+        content: '+';
+        flex: none;
+        font-size: 1.5rem;
+        line-height: 1;
+        color: var(--muted);
+        transition: rotate var(--duration-fast) var(--ease-out);
+      }
+      .faq details[open] summary::after { rotate: 45deg; }
+      .faq p { color: var(--muted); margin: 0 0 var(--space-4); max-width: var(--measure); }
+
+      /* -- the ask -------------------------------------------------------- */
+      .ask {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-6);
+        padding: var(--space-6);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow);
+      }
+      .ask-copy p { color: var(--muted); margin: var(--space-3) 0 0; max-width: var(--measure); }
+      form { display: grid; gap: var(--space-4); }
+      label { display: grid; gap: var(--space-1); font-weight: 600; }
+      input, textarea {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font: inherit;
+        font-weight: 400;
+        background: var(--bg);
+        color: var(--text);
+        transition: border-color var(--duration-press) var(--ease-out);
+      }
+      input:hover, textarea:hover { border-color: var(--muted); }
+      input:focus-visible, textarea:focus-visible { border-color: var(--primary); outline-offset: 0; }
+      form .button { justify-self: start; }
+      #form-status { min-height: 1.5em; color: var(--muted); margin: 0; }
+
+      /* -- reveal on scroll ----------------------------------------------- */
+      /* `html.js` lives outside this component's scope, hence :global. */
+      :global(html.js) .reveal {
+        opacity: 0;
+        translate: 0 12px;
+        transition:
+          opacity var(--duration-enter) var(--ease-out),
+          translate var(--duration-enter) var(--ease-out);
+      }
+      :global(html.js) .reveal.is-in { opacity: 1; translate: 0 0; }
+      :global(html.js) .stack > .reveal:nth-child(2) { transition-delay: var(--stagger); }
+      :global(html.js) .stack > .reveal:nth-child(3) { transition-delay: calc(2 * var(--stagger)); }
+      :global(html.js) .stack > .reveal:nth-child(n + 4) { transition-delay: calc(3 * var(--stagger)); }
+      :global(html.js) .steps > .reveal:nth-child(2) { transition-delay: var(--stagger); }
+      :global(html.js) .steps > .reveal:nth-child(3) { transition-delay: calc(2 * var(--stagger)); }
+      :global(html.js) .steps > .reveal:nth-child(n + 4) { transition-delay: calc(3 * var(--stagger)); }
+
+      /* -- one column below tablet width ---------------------------------- */
+      @media (max-width: 47.9rem) {
+        .hero[data-split], .split, .ask { grid-template-columns: 1fr; }
+        .hero { padding-block: var(--space-6) var(--space-5); }
+        .hero-copy { max-width: none; }
+        .split > h2 { position: static; }
+        .ask { padding: var(--space-5); }
+        main > section + section { margin-top: calc(var(--space-6) * 1.5); }
+      }
     </style>
   </body>
 </html>
